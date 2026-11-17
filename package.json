@@ -1,0 +1,7 @@
+{
+  "name": "fahem",
+  "private": true,
+  "version": "0.1.0",
+  "description": "فاهم: معلّم ذكي يشرح السلايدات صوتًا ورسمًا، ومنظّم جدول جامعي بدون تعارضات.",
+  "scripts": { "build": "node build.mjs", "test": "node --test tests/core.test.mjs", "serve": "node build.mjs && npx --yes serve dist" }
+}

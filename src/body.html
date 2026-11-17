@@ -1,0 +1,151 @@
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#home" aria-label="فاهم، الصفحة الرئيسية">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="3" y="6" width="34" height="25" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="M11 23c4-9 7 4 10-4s5 2 8-3" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><path d="M14 36h12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+      <span>فاهم</span>
+    </a>
+    <nav class="nav" aria-label="الأقسام">
+      <a href="#home" data-nav="home">الرئيسية</a>
+      <a href="#study" data-nav="study">الدراسة</a>
+      <a href="#register" data-nav="register">التسجيل</a>
+    </nav>
+    <div class="row">
+      <button type="button" class="icon-btn lang-btn" id="lang" aria-label="English">EN</button>
+      <button type="button" class="icon-btn" id="theme" aria-label="بدّل بين الوضع الليلي والنهاري"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
+      <button type="button" class="icon-btn" id="settings" aria-label="الإعدادات"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ================= الرئيسية ================= -->
+  <section id="view-home" class="view">
+    <div class="hero">
+      <div class="wrap hero-in">
+        <div class="hero-copy">
+          <p class="eyebrow">معلّمك الخصوصي + جدولك الجامعي</p>
+          <h1>ارفع سلايداتك،<br>وفاهم يشرحها لك <em>صوت وصورة</em>.</h1>
+          <p class="lede">يرسم الفكرة على السبورة قدّامك وهو يحكيها، يجاوب على أسئلتك، ويختبر فهمك. وبنفس المكان يرتّب لك جدول الفصل بدون تعارضات.</p>
+          <div class="row">
+            <a class="btn primary big" href="#study">جرّب الشرح الآن</a>
+            <a class="btn ghost big" href="#register">رتّب جدولي</a>
+          </div>
+        </div>
+        <div class="scene" id="scene" aria-hidden="true">
+          <div class="panel p-slide"><span class="p-tag">الشريحة 3</span><h4>المكدّس Stack</h4><ul><li>آخر من يدخل أول من يخرج LIFO</li><li>عمليتان: push و pop</li><li>مثال: زر التراجع Undo</li></ul></div>
+          <div class="panel p-board"><svg id="hero-board" class="board"></svg><p class="p-caption" id="hero-caption"></p></div>
+          <div class="panel p-table">
+            <span class="p-tag">جدولك · بدون تعارضات</span>
+            <div class="mini-tt"><i style="--c:var(--c1);grid-area:1/1/3/2"></i><i style="--c:var(--c3);grid-area:1/3/3/4"></i><i style="--c:var(--c2);grid-area:3/2/5/3"></i><i style="--c:var(--c4);grid-area:3/4/5/5"></i><i style="--c:var(--c5);grid-area:5/1/6/2"></i><i style="--c:var(--c6);grid-area:2/5/4/6"></i><i style="--c:var(--c2);grid-area:5/3/7/4"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap band" id="next-class" hidden></div>
+
+    <div class="wrap band">
+      <h2 class="band-title">ثلاث خطوات من السلايد للفهم</h2>
+      <ol class="how">
+        <li><b>1</b><h3>ارفع المحاضرة</h3><p>ملف PDF أو PowerPoint أو صور. القراءة تتم داخل متصفحك، والملف ما يطلع من جهازك.</p></li>
+        <li><b>2</b><h3>فاهم يشرح ويرسم</h3><p>لكل شريحة خريطة تنرسم بخط اليد فرعًا فرعًا، مع صوت يشرح كل فرع وهو ينرسم.</p></li>
+        <li><b>3</b><h3>اسأل واختبر نفسك</h3><p>اكتب سؤالك أو قله بصوتك، وفاهم يرسم لك الجواب على سبورة جديدة. وبعدها اختبار قصير.</p></li>
+      </ol>
+    </div>
+
+    <div class="wrap band split">
+      <div>
+        <p class="eyebrow">قسم التسجيل</p>
+        <h2 class="band-title">جدول الفصل، على كيفك</h2>
+        <p class="lede">اختر موادك وجاوب على ثلاث أسئلة: تحب الصباح؟ ودّك بيوم أوف؟ محاضراتك ورا بعض؟ فاهم يجرّب كل تركيبات الشعب ويعطيك أفضل أربعة بدائل، وأنت تعدّل والفحص شغّال.</p>
+        <ul class="ticks"><li>فحص فوري للتعارضات والشعب المقفلة والعملي المرتبط</li><li>تراجع وإعادة لكل تعديل</li><li>تصدير إلى تقويم Google أو ملف CSV</li></ul>
+        <a class="btn primary" href="#register">ابدأ ترتيب الجدول</a>
+      </div>
+      <div class="tilt" data-tilt>
+        <div class="panel p-table static">
+          <span class="p-tag">بديل 1 · أوف الخميس</span>
+          <div class="mini-tt tall"><i style="--c:var(--c1);grid-area:1/1/3/2"></i><i style="--c:var(--c1);grid-area:1/3/3/4"></i><i style="--c:var(--c2);grid-area:3/2/5/3"></i><i style="--c:var(--c2);grid-area:3/4/5/5"></i><i style="--c:var(--c3);grid-area:3/1/5/2"></i><i style="--c:var(--c3);grid-area:3/3/5/4"></i><i style="--c:var(--c5);grid-area:5/2/7/3"></i><i style="--c:var(--c4);grid-area:6/1/7/2"></i><i style="--c:var(--c6);grid-area:1/4/3/5"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="wrap foot"><p>فاهم · نسخة عرض. السلايدات وجدولك محفوظة في متصفحك فقط.</p></footer>
+  </section>
+
+  <!-- ================= الدراسة ================= -->
+  <section id="view-study" class="view" hidden>
+    <div class="wrap study" id="study-drop">
+      <div class="study-head">
+        <div class="deck-title"><h2 id="deck-name"></h2><span class="tag now" id="deck-tag">مثال جاهز</span></div>
+        <div class="row">
+          <span class="chip-static" id="provider"></span><span class="chip-static" id="voice-chip"></span>
+          <label class="btn primary">ارفع سلايداتك<input type="file" id="file" accept=".pdf,.pptx,image/*" multiple hidden></label>
+        </div>
+      </div>
+      <div class="study-tools">
+        <div class="chips" id="demo-picks" role="group" aria-label="أمثلة جاهزة من تخصصات مختلفة"></div>
+        <div class="row">
+          <label class="sel"><span class="sr">تخصصك</span><select id="major"></select></label>
+          <label class="sel"><span class="sr">مستوى الشرح</span><select id="level"><option value="easy">شرح مبسّط</option><option value="mid">شرح متوازن</option><option value="deep">شرح متعمّق للاختبار</option></select></label>
+          <span class="chip-static" id="xp"></span>
+        </div>
+      </div>
+      <p class="voice-tip" id="voice-tip" hidden></p>
+      <p class="voice-tip" id="ai-tip" hidden></p>
+      <div class="deck-progress" id="deck-progress"><span id="deck-progress-label"></span></div>
+
+      <div class="study-grid">
+        <div class="col-slide">
+          <div class="stage" id="slide-stage"></div>
+          <div class="stage-bar">
+            <button type="button" class="icon-btn" id="slide-prev" aria-label="الشريحة السابقة">›</button>
+            <span id="slide-count" class="num"></span>
+            <button type="button" class="icon-btn" id="slide-next" aria-label="الشريحة التالية">‹</button>
+            <button type="button" class="btn primary grow" id="explain">اشرح لي هذي الشريحة</button>
+          </div>
+          <div class="strip" id="strip"></div>
+        </div>
+
+        <div class="col-board">
+          <div class="board-frame">
+            <svg id="board" class="board" role="img" aria-label="سبورة الشرح"></svg>
+            <div class="board-empty" id="board-empty"><p>السبورة فاضية.</p><p class="muted">اضغط «اشرح لي هذي الشريحة».</p></div>
+            <div class="thinking" id="thinking" hidden><span class="pen"></span><span id="thinking-label"></span></div>
+            <span class="chip-static source" id="source-chip"></span>
+          </div>
+          <p class="caption" id="caption" dir="auto" aria-live="polite"></p>
+          <div class="player" id="player">
+            <div class="dots" id="dots"></div>
+            <div class="controls">
+              <button type="button" class="icon-btn" id="beat-prev" aria-label="اللقطة السابقة">›</button>
+              <button type="button" class="play" id="play" aria-pressed="false" aria-label="تشغيل"><span class="ic-play">▶</span><span class="ic-pause">❚❚</span></button>
+              <button type="button" class="icon-btn" id="beat-next" aria-label="اللقطة التالية">‹</button>
+              <button type="button" class="icon-btn toggle" id="mute" aria-pressed="false" aria-label="كتم الصوت"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>
+              <label class="sel"><span class="sr">السرعة</span><select id="speed"><option value="0.8">0.8×</option><option value="1">1×</option><option value="1.2">1.2×</option><option value="1.5">1.5×</option></select></label>
+              <label class="check"><input type="checkbox" id="auto"> شرح متواصل</label>
+              <button type="button" class="btn ghost" id="cinema">عرض سينمائي</button>
+              <button type="button" class="btn ghost" id="quiz-btn">اختبرني</button>
+              <button type="button" class="btn ghost" id="back-to-slide" hidden>رجوع لشرح الشريحة</button>
+            </div>
+          </div>
+          <form class="ask" id="ask-form">
+            <label class="sr" for="ask-input">اسأل سؤال متابعة</label>
+            <input id="ask-input" type="text" placeholder="اسأل سؤال متابعة…" autocomplete="off" maxlength="400">
+            <button type="button" class="icon-btn toggle" id="mic" aria-pressed="false" aria-label="اسأل بصوتك" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+            <button type="submit" class="btn primary" id="ask-send">اسأل</button>
+          </form>
+          <div class="quiz" id="quiz" hidden></div>
+          <details class="script" id="script" hidden><summary>الشرح كاملًا مكتوبًا</summary><div id="script-body" dir="auto"></div></details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= التسجيل ================= -->
+  <section id="view-register" class="view" hidden>
+    <div class="wrap reg" id="reg-root"></div>
+  </section>
+</main>
+
+<dialog id="sheet" class="sheet"><button type="button" class="icon-btn sheet-x" id="sheet-x" aria-label="إغلاق">×</button><div id="sheet-body"></div></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
