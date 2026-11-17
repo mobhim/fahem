@@ -3,7 +3,7 @@
 (function () {
   'use strict';
   const synth = typeof speechSynthesis !== 'undefined' ? speechSynthesis : null;
-  const state = { muted: false, rate: 1, tts: null, ttsOff: false, audio: null, turn: -1, pitch: 1, claudeVoice: '', elevenVoice: '', run: 0, timer: null, wake: null, left: 0 };
+  const state = { muted: false, rate: 1, tts: null, ttsOff: false, audio: null, unlocked: false, geminiOff: false, geminiVoice: '', turn: -1, pitch: 1, claudeVoice: '', elevenVoice: '', run: 0, timer: null, wake: null, left: 0 };
 
   if (window.claude && window.claude.use) window.claude.use('tts').then((t) => { state.tts = t; }).catch(() => {});
   let arVoice = null;
@@ -57,45 +57,88 @@
     }
   }
 
-  /* ---------- ElevenLabs: صوت بشري طبيعي، يُجهَّز مسبقًا لكل لقطة ---------- */
+  /* ---------- تشغيل الصوت عبر WebAudio ----------
+   * Safari و Chrome يمنعان أي صوت يبدأ بعد انتظار شبكة ما لم يُفتح الصوت داخل ضغطة المستخدم.
+   * نفتح سياق الصوت (ونطق المتصفح) مع أول ضغطة، وبعدها كل المقاطع تشتغل منه بدون منع. */
+  const AC = window.AudioContext || window.webkitAudioContext;
+  let actx = null;
+  function unlock() {
+    try {
+      if (AC) { actx = actx || new AC(); if (actx.state === 'suspended') actx.resume(); }
+      if (synth && !state.unlocked) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; synth.speak(u); }
+      state.unlocked = true;
+    } catch (e) { /* المتصفح ما يدعم */ }
+  }
+  ['pointerdown', 'keydown', 'touchend'].forEach((t) => document.addEventListener(t, unlock, { capture: true, passive: true }));
+  // Safari يحمّل قائمة الأصوات متأخرًا وأحيانًا بدون حدث: نعيد المحاولة كم مرة
+  if (synth) [300, 1000, 2500].forEach((ms) => setTimeout(() => { if (!arVoice || !enVoice()) pickVoice(); }, ms));
+
+  function playBuffer(buffer, run) {
+    return new Promise((resolve) => {
+      const src = actx.createBufferSource();
+      src.buffer = buffer; src.playbackRate.value = state.rate; src.connect(actx.destination);
+      state.audio = src; state.wake = resolve;
+      src.onended = () => { if (state.audio === src) { state.audio = null; state.wake = null; } resolve(); };
+      if (run !== state.run) return resolve();
+      src.start();
+    });
+  }
+  const clips = new Map(); // مفتاح → وعد بمقطع جاهز (AudioBuffer)
+  function cached(id, make) {
+    if (clips.has(id)) return clips.get(id);
+    const job = make(); job.catch(() => clips.delete(id));
+    clips.set(id, job);
+    if (clips.size > 80) clips.delete(clips.keys().next().value);
+    return job;
+  }
+
+  /* ---------- صوت Gemini: طبيعي ويشتغل في كل المتصفحات، بنفس مفتاح الشرح أو عبر خادم الموقع ---------- */
+  const GEMINI_VOICES = ['Kore', 'Puck', 'Aoede', 'Charon', 'Leda', 'Orus'];
+  const geminiOn = () => !!AC && !state.geminiOff && F.store.get('gemini-voice', true) && !F.hosted && !!(F.PROXY || F.store.get('gemini-key', ''));
+  function geminiClip(text) {
+    const voice = state.geminiVoice || GEMINI_VOICES[0], model = F.store.get('gemini-tts-model', 'gemini-2.5-flash-preview-tts');
+    return cached(['g', voice, model, text].join('|'), async () => {
+      const headers = { 'Content-Type': 'application/json' };
+      if (!F.PROXY) headers['x-goog-api-key'] = F.store.get('gemini-key', '');
+      const res = await fetch(`${F.PROXY || 'https://generativelanguage.googleapis.com'}/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ contents: [{ parts: [{ text }] }], generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } } }),
+      });
+      if (!res.ok) throw Object.assign(new Error(`خطأ ${res.status} من Gemini.`), { fatal: res.status !== 429 && res.status < 500 });
+      const part = ((((await res.json()).candidates || [])[0] || {}).content || { parts: [] }).parts.find((p) => p.inlineData || p.inline_data);
+      const data = part && (part.inlineData || part.inline_data);
+      if (!data || !data.data) throw new Error('Gemini ما رجّع صوتًا.');
+      // الرد: عيّنات PCM خام 16-بت قناة واحدة
+      const rate = Number(((data.mimeType || data.mime_type || '').match(/rate=(\d+)/) || [])[1]) || 24000;
+      const bin = atob(data.data), n = bin.length >> 1, buf = actx.createBuffer(1, n, rate), ch = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) { const v = bin.charCodeAt(i * 2) | (bin.charCodeAt(i * 2 + 1) << 8); ch[i] = (v >= 32768 ? v - 65536 : v) / 32768; }
+      return buf;
+    });
+  }
+
+  /* ---------- ElevenLabs: اختياري ---------- */
   const EL = 'https://api.elevenlabs.io/v1';
   const elevenCfg = () => ({ key: F.store.get('eleven-key', ''), voice: state.elevenVoice || F.store.get('eleven-voice', ''), model: F.store.get('eleven-model', 'eleven_multilingual_v2') });
   // داخل claude.ai الشبكة مقفولة على ElevenLabs، فنستخدم صوت Claude هناك.
-  const elevenOn = () => { const c = elevenCfg(); return !F.hosted && !!(c.key && c.voice); };
-  const clips = new Map();
+  const elevenOn = () => { const c = elevenCfg(); return !!AC && !F.hosted && !!(c.key && c.voice); };
   let elevenWarned = false;
-
   function elevenClip(text) {
-    const c = elevenCfg(), id = [c.voice, c.model, text].join('|');
-    if (clips.has(id)) return clips.get(id);
-    const job = fetch(`${EL}/text-to-speech/${encodeURIComponent(c.voice)}?output_format=mp3_44100_128`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'xi-api-key': c.key },
-      // إعدادات تميل للإلقاء الطبيعي: ثبات متوسط يعطي تنغيمًا حيًّا بدل النبرة الواحدة
-      // ما نحدد لغة: النموذج متعدد اللغات يتعرّف على العربي والإنجليزي داخل الجملة تلقائيًا
-      body: JSON.stringify({ text, model_id: c.model, voice_settings: { stability: 0.45, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true } }),
-    }).then(async (res) => {
+    const c = elevenCfg();
+    return cached(['e', c.voice, c.model, text].join('|'), async () => {
+      const res = await fetch(`${EL}/text-to-speech/${encodeURIComponent(c.voice)}?output_format=mp3_44100_128`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'xi-api-key': c.key },
+        // إعدادات تميل للإلقاء الطبيعي؛ وما نحدد لغة لأن النموذج يتعرّف على العربي والإنجليزي داخل الجملة تلقائيًا
+        body: JSON.stringify({ text, model_id: c.model, voice_settings: { stability: 0.45, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true } }),
+      });
       if (!res.ok) throw new Error(res.status === 401 ? 'مفتاح ElevenLabs غير صالح.' : res.status === 429 ? 'وصلت حد الاستخدام في ElevenLabs.' : res.status === 404 || res.status === 400 ? 'الصوت أو النموذج المختار غير متاح في ElevenLabs.' : `خطأ ${res.status} من ElevenLabs.`);
-      return URL.createObjectURL(await res.blob());
+      const bytes = await res.arrayBuffer();
+      return new Promise((ok, bad) => actx.decodeAudioData(bytes, ok, () => bad(new Error('ما قدرنا نشغّل صوت ElevenLabs.'))));
     });
-    job.catch(() => clips.delete(id));
-    clips.set(id, job);
-    if (clips.size > 60) { const old = clips.keys().next().value; clips.get(old).then((u) => URL.revokeObjectURL(u)).catch(() => {}); clips.delete(old); }
-    return job;
   }
   /** يجهّز صوت اللقطة القادمة والحالية تنطق، فما يصير فراغ بين اللقطات. */
-  function warm(text) { if (elevenOn() && !state.muted) elevenClip(text).catch(() => {}); }
-
-  async function eleven(text, run) {
-    const url = await elevenClip(text);
-    if (run !== state.run) return;
-    const audio = new Audio(url);
-    audio.playbackRate = state.rate; state.audio = audio;
-    await new Promise((resolve, reject) => {
-      state.wake = resolve; audio.onended = resolve;
-      audio.onerror = () => reject(new Error('ما قدرنا نشغّل صوت ElevenLabs.'));
-      audio.play().catch(reject);
-    });
-    if (state.audio === audio) { state.audio = null; state.wake = null; }
+  function warm(text) {
+    if (state.muted || !actx) return;
+    if (elevenOn()) elevenClip(text).catch(() => {}); else if (geminiOn()) geminiClip(text).catch(() => {});
   }
 
   async function listVoices(key) {
@@ -105,11 +148,12 @@
     return ((await res.json()).voices || []).map((v) => ({ id: v.voice_id, name: v.name, arabic: arabic(v), tags: Object.values(v.labels || {}).join('، ') }))
       .sort((a, b) => b.arabic - a.arabic);
   }
-  const kind = () => (elevenOn() ? 'eleven' : state.tts && !state.ttsOff ? 'claude' : 'browser');
+  const kind = () => (elevenOn() ? 'eleven' : geminiOn() ? 'gemini' : state.tts && !state.ttsOff ? 'claude' : 'browser');
   /** وصف الصوت المستخدم الآن، وهل هو صوت طبيعي. */
   function describeVoice() {
     const k = kind();
     if (k === 'eleven') return { label: 'صوت ElevenLabs', natural: true };
+    if (k === 'gemini') return { label: 'صوت Gemini', natural: true };
     if (k === 'claude') return { label: 'صوت Claude' + (state.claudeVoice ? ' · ' + ({ buttery: 'دافئ', airy: 'خفيف', glassy: 'صافي', rounded: 'عميق' }[state.claudeVoice]) : ''), natural: true };
     if (F.ui === 'en') { // الواجهة إنجليزية: المهم هو الصوت الإنجليزي
       const v = enVoice();
@@ -125,13 +169,14 @@
   const rotating = () => F.store.get('rotate-voice', true);
   /** يُستدعى مع بداية كل شرح جديد: ينقل للصوت التالي في كل مزوّد. */
   function rotate() {
-    if (!rotating()) { state.claudeVoice = ''; state.elevenVoice = ''; state.pitch = 1; pickVoice(); return; }
+    if (!rotating()) { state.claudeVoice = ''; state.elevenVoice = ''; state.geminiVoice = ''; state.pitch = 1; pickVoice(); return; }
     const t = ++state.turn;
     state.claudeVoice = CLAUDE_VOICES[(CLAUDE_VOICES.indexOf(F.store.get('claude-voice', 'buttery')) + t) % CLAUDE_VOICES.length];
     const all = arVoices(), natural = all.filter((v) => quality(v) >= 4), pool = natural.length ? natural : all;
     if (pool.length) arVoice = pool[t % pool.length];
     // لو المتصفح فيه صوت عربي واحد فقط، نغيّر طبقته حتى يختلف من شرح لشرح
     state.pitch = pool.length > 1 ? 1 : [1, 0.82, 1.18][t % 3];
+    state.geminiVoice = GEMINI_VOICES[t % GEMINI_VOICES.length];
     const ids = F.store.get('eleven-voices', []);
     state.elevenVoice = ids.length ? ids[t % ids.length] : '';
     document.dispatchEvent(new Event('fahem:voice'));
@@ -142,12 +187,19 @@
     stop();
     const run = ++state.run;
     if (state.muted) return silent(text, run);
+    if (!actx) unlock();
     if (elevenOn()) {
-      try { await eleven(text, run); return; }
+      try { const buf = await elevenClip(text); if (run !== state.run) return; await playBuffer(buf, run); return; }
       catch (e) {
         if (run !== state.run) return;
-        state.audio = null; state.wake = null;
         if (!elevenWarned) { elevenWarned = true; F.toast((e.message || 'تعذّر صوت ElevenLabs.') + ' كمّلنا بصوت المتصفح.'); }
+      }
+    } else if (geminiOn()) {
+      try { const buf = await geminiClip(text); if (run !== state.run) return; await playBuffer(buf, run); return; }
+      catch (e) {
+        if (run !== state.run) return;
+        if (e && e.fatal) state.geminiOff = true; // النموذج غير متاح لهذا المفتاح: ما نعيد المحاولة كل لقطة
+        document.dispatchEvent(new Event('fahem:voice'));
       }
     }
     if (state.tts && !state.ttsOff) {
@@ -172,7 +224,7 @@
     state.run++;
     clearTimeout(state.timer);
     if (state.wake) { const w = state.wake; state.wake = null; w(); }
-    if (state.audio) { try { state.audio.pause(); } catch (e) { /* لا شيء ينطق */ } state.audio = null; }
+    if (state.audio) { const src = state.audio; state.audio = null; try { src.onended = null; src.stop(); } catch (e) { /* لا شيء ينطق */ } }
     try { if (state.tts) state.tts.stop(); } catch (e) { /* لا شيء ينطق */ }
     try { if (synth) synth.cancel(); } catch (e) { /* لا شيء ينطق */ }
   }
@@ -202,5 +254,5 @@
     return () => r.stop();
   }
 
-  F.Voice = { state, estimate, isEdge: /Edg\//.test(navigator.userAgent), speak, stop, warm, rotate, kind, describeVoice, arVoices, setBrowserVoice, hasClaude: () => !!(state.tts && !state.ttsOff), listVoices, elevenCfg, resetWarning() { elevenWarned = false; }, canListen, listen };
+  F.Voice = { state, estimate, unlock, audio: () => actx, isEdge: /Edg\//.test(navigator.userAgent), speak, stop, warm, rotate, kind, describeVoice, arVoices, setBrowserVoice, hasClaude: () => !!(state.tts && !state.ttsOff), listVoices, elevenCfg, resetWarning() { elevenWarned = false; state.geminiOff = false; }, canListen, listen };
 })();

@@ -77,7 +77,7 @@ button { cursor: pointer; }
 .eyebrow { font-size: .85rem; font-weight: 600; color: var(--accent-strong); letter-spacing: .01em; }
 
 /* ---------- الشريط العلوي ---------- */
-.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: color-mix(in srgb, var(--bg) 86%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 .top-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
 .brand { display: inline-flex; align-items: center; gap: 8px; color: var(--fg); text-decoration: none; font: 700 1.3rem var(--font-display); }
 .brand svg { width: 34px; height: 34px; }
@@ -255,6 +255,9 @@ button { cursor: pointer; }
 .caption.live .w.said { opacity: 1; }
 .caption.live .w.cur { color: var(--accent-strong); }
 .voice-tip { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--warn); background: color-mix(in srgb, var(--warn) 12%, var(--surface)); font-size: .95rem; }
+.adv { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+.adv summary { cursor: pointer; font-weight: 600; }
+.adv[open] summary { margin-bottom: 10px; }
 .script { border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); padding: 12px 16px; }
 .script summary { cursor: pointer; font-weight: 600; }
 .script h4 { margin-top: 14px; color: var(--accent-strong); font-size: 1.05rem; }
@@ -358,7 +361,7 @@ button { cursor: pointer; }
 
 /* ---------- النافذة والتنبيه ---------- */
 .sheet { overflow-y: auto; width: min(560px, calc(100vw - 24px)); max-height: min(86vh, 720px); padding: 22px; border-radius: 20px; border: 1px solid var(--line); background: var(--bg-2); color: var(--fg); }
-.sheet::backdrop { background: #05031099; backdrop-filter: blur(3px); }
+.sheet::backdrop { background: #05031099; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
 .sheet-x { position: absolute; inset: 12px auto auto 12px; }
 #sheet-body { display: grid; gap: 12px; }
 #sheet-body h3 { padding-inline-end: 0; padding-inline-start: 0; max-width: calc(100% - 50px); }

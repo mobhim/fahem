@@ -3,6 +3,9 @@
   'use strict';
   const F = (window.F = window.F || {});
 
+  // إعداد الموقع (يُحقن وقت البناء من config.json): رابط الخادم الوسيط إن وُجد
+  F.PROXY = String((window.FAHEM_CONFIG || {}).proxy || '').replace(/\/+$/, '');
+
   F.$ = (sel, root) => (root || document).querySelector(sel);
   F.$$ = (sel, root) => [...(root || document).querySelectorAll(sel)];
   F.esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

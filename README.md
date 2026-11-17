@@ -13,6 +13,18 @@
 
 `npm run build` يكتب الصفحة الجاهزة في `docs/index.html`. من إعدادات المستودع: Settings ← Pages ← Source: Deploy from a branch ← Branch: `main` والمجلد `/docs`.
 
+## أفضل تجربة لكل الزوار وفي كل المتصفحات (خادم وسيط)
+
+أصوات المتصفحات تختلف: Edge فيه أصوات عربية طبيعية، أما Chrome و Safari فأصواتهما العربية آلية. الحل الذي يعمل في الجميع هو صوت Gemini الطبيعي، وهو يحتاج مفتاح Gemini. حتى لا يُدخل كل زائر مفتاحًا، ضع مفتاحك في خادم وسيط صغير:
+
+1. أنشئ Worker في Cloudflare والصق فيه `server/worker.js`.
+2. أضف المتغيرات: `GEMINI_API_KEY` (سرّي) و`ALLOWED_ORIGINS` (مثل `https://mobhim.github.io`).
+3. أنشئ في جذر المشروع ملف `config.json` فيه `{"proxy": "https://اسم-الووركر.workers.dev"}` ثم `npm run build` وارفع.
+
+بعدها يحصل كل زائر على الشرح الذكي والصوت الطبيعي بلا مفاتيح وفي أي متصفح، والتكلفة على مفتاحك. ضع حدّ إنفاق على المفتاح وقاعدة تحديد معدّل في Cloudflare، لأن ترويسة Origin يمكن تزويرها من خارج المتصفح.
+
+بدون الخادم الوسيط: من يضع مفتاح Gemini في الإعدادات يحصل على صوت Gemini أيضًا، وغيره يسمع أفضل صوت في متصفحه.
+
 ## التشغيل
 
 ```bash
@@ -55,7 +67,8 @@ src/core/scheduler.js   محرك الجداول (بدون DOM، مختبَر)
 src/core/import.js      تحويل جدول الشعب الجامعي إلى كتالوج
 src/core/lesson.js      نموذج الدرس وتخطيط السبورة + العرض التجريبي
 src/board.js            رسم السبورة SVG بخط اليد
-src/voice.js            النطق والإملاء
+src/voice.js            النطق (Gemini، ElevenLabs، Claude، المتصفح) والإملاء
+server/worker.js        خادم وسيط اختياري يحمل مفتاح Gemini
 src/ai.js               مزوّدو الشرح
 src/slides.js           قراءة PDF / PPTX / صور داخل المتصفح
 src/study.js            واجهة الدراسة

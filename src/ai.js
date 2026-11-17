@@ -14,8 +14,9 @@
 
   const cfg = () => ({ key: F.store.get('gemini-key', ''), model: F.store.get('gemini-model', 'gemini-2.5-flash') });
   // داخل claude.ai الشبكة مقفولة على Gemini، فنستخدم Claude هناك.
-  const provider = () => (!F.hosted && cfg().key ? 'gemini' : sample ? 'claude' : 'local');
-  const providerName = () => ({ gemini: `Gemini (${cfg().model})`, claude: 'Claude', local: 'شرح مبسّط بدون ذكاء اصطناعي' }[provider()]);
+  // F.PROXY: خادم صغير يملكه صاحب الموقع ويحمل مفتاح Gemini، فالزوار يستخدمون الشرح والصوت بدون مفاتيح
+  const provider = () => (!F.hosted && (F.PROXY || cfg().key) ? 'gemini' : sample ? 'claude' : 'local');
+  const providerName = () => ({ gemini: F.PROXY ? 'Gemini' : `Gemini (${cfg().model})`, claude: 'Claude', local: 'شرح مبسّط بدون ذكاء اصطناعي' }[provider()]);
 
   const SHAPES_AR = `map خريطة ذهنية لمفهوم وفروعه (ضع hub)؛ steps خطوات متتابعة أو تسلسل زمني؛ cycle دورة تتكرر؛ compare مقارنة بين شيئين (ضع a و b، ولكل عنصر side)؛ bars أعمدة لمقارنة كميات؛ line خط لتغيّر كمية مع الوقت أو الحجم؛ pie نسب من كل؛ list قائمة نقاط؛ formula معادلة تُشتق أو تُحل سطرًا سطرًا (label هو السطر الرياضي بالرموز فقط بدون كلمات عربية، و detail وصف قصير للخطوة)؛ lab تجربة أو رحلة مادة عبر أوعية مختبر (لكل عنصر vessel واحد من beaker أو flask أو tube أو pill أو drop)؛ timeline خط زمني (label الحدث و detail تاريخه)؛ table جدول (ضع cols عناوين الأعمدة حتى 3، ولكل عنصر label اسم الصف و cells خلاياه)؛ pyramid مستويات من القاعدة إلى القمة؛ code كود قصير يُتتبّع سطرًا سطرًا (label هو سطر الكود كما هو حتى 55 حرفًا، و say يشرح السطر)؛ big عبارة أو رقم أو معادلة واحدة تستحق الإبراز (ضع text و note، بدون items)`;
   const SHAPES_EN = `map: a mind map of a concept and its branches (set hub); steps: sequential steps or a timeline; cycle: a repeating loop; compare: two things side by side (set a and b, and side on each item); bars: bar chart comparing quantities; line: line chart of a quantity changing over time or size; pie: shares of a whole; list: bullet points; formula: an equation derived or solved line by line (label is the maths line as-is, detail a short name for the step); lab: an experiment or a substance's journey through lab vessels (each item has a vessel: beaker, flask, tube, pill or drop); timeline: events on a time axis (label the event, detail its date); table: a table (set cols, up to 3 column headers, and on each item label as the row name and cells as its cells); pyramid: levels from base to top; code: a short snippet traced line by line (label is the code line as-is, up to 55 characters, and say explains that line); big: one statement, number or formula worth a spotlight (set text and note, no items)`;
@@ -151,8 +152,10 @@ ${SCHEMA}`;
     const { key, model } = cfg();
     const parts = [{ text: prompt }];
     if (image) parts.push({ inline_data: { mime_type: 'image/jpeg', data: image.split(',')[1] } });
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+    const headers = { 'Content-Type': 'application/json' };
+    if (!F.PROXY) headers['x-goog-api-key'] = key;
+    const res = await fetch(`${F.PROXY || 'https://generativelanguage.googleapis.com'}/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST', headers,
       body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig: { responseMimeType: 'application/json', temperature: 0.6 } }),
     });
     if (!res.ok) {

@@ -87,7 +87,7 @@ button { cursor: pointer; }
 .eyebrow { font-size: .85rem; font-weight: 600; color: var(--accent-strong); letter-spacing: .01em; }
 
 /* ---------- الشريط العلوي ---------- */
-.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: color-mix(in srgb, var(--bg) 86%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 .top-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; }
 .brand { display: inline-flex; align-items: center; gap: 8px; color: var(--fg); text-decoration: none; font: 700 1.3rem var(--font-display); }
 .brand svg { width: 34px; height: 34px; }
@@ -265,6 +265,9 @@ button { cursor: pointer; }
 .caption.live .w.said { opacity: 1; }
 .caption.live .w.cur { color: var(--accent-strong); }
 .voice-tip { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--warn); background: color-mix(in srgb, var(--warn) 12%, var(--surface)); font-size: .95rem; }
+.adv { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+.adv summary { cursor: pointer; font-weight: 600; }
+.adv[open] summary { margin-bottom: 10px; }
 .script { border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); padding: 12px 16px; }
 .script summary { cursor: pointer; font-weight: 600; }
 .script h4 { margin-top: 14px; color: var(--accent-strong); font-size: 1.05rem; }
@@ -368,7 +371,7 @@ button { cursor: pointer; }
 
 /* ---------- النافذة والتنبيه ---------- */
 .sheet { overflow-y: auto; width: min(560px, calc(100vw - 24px)); max-height: min(86vh, 720px); padding: 22px; border-radius: 20px; border: 1px solid var(--line); background: var(--bg-2); color: var(--fg); }
-.sheet::backdrop { background: #05031099; backdrop-filter: blur(3px); }
+.sheet::backdrop { background: #05031099; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
 .sheet-x { position: absolute; inset: 12px auto auto 12px; }
 #sheet-body { display: grid; gap: 12px; }
 #sheet-body h3 { padding-inline-end: 0; padding-inline-start: 0; max-width: calc(100% - 50px); }
@@ -490,7 +493,7 @@ button { cursor: pointer; }
       <div class="study-head">
         <div class="deck-title"><h2 id="deck-name"></h2><span class="tag now" id="deck-tag">مثال جاهز</span></div>
         <div class="row">
-          <span class="chip-static" id="provider"></span><span class="chip-static" id="voice-chip"></span>
+          <span class="chip-static" id="provider"></span><span class="chip-static" id="voice-chip" hidden></span>
           <label class="btn primary">ارفع سلايداتك<input type="file" id="file" accept=".pdf,.pptx,image/*" multiple hidden></label>
         </div>
       </div>
@@ -566,11 +569,15 @@ button { cursor: pointer; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>window.FAHEM_CONFIG = {"proxy":""};</script>
 <script>
 /* فاهم — أدوات مشتركة صغيرة. */
 (function () {
   'use strict';
   const F = (window.F = window.F || {});
+
+  // إعداد الموقع (يُحقن وقت البناء من config.json): رابط الخادم الوسيط إن وُجد
+  F.PROXY = String((window.FAHEM_CONFIG || {}).proxy || '').replace(/\/+$/, '');
 
   F.$ = (sel, root) => (root || document).querySelector(sel);
   F.$$ = (sel, root) => [...(root || document).querySelectorAll(sel)];
@@ -687,6 +694,9 @@ button { cursor: pointer; }
     'ممتاز، فاهم الشريحة.': 'Excellent, you have got this slide.', 'راجع الشرح وجرّب مرة ثانية.': 'Review the explanation and try again.',
 
     // الإعدادات
+    'الصوت تلقائي: فاهم يختار أفضل صوت متاح ويغيّره مع كل شرح، وما تحتاج تضبط شي.': 'The voice is automatic: Fahem picks the best available voice and changes it with every explanation. Nothing to set up.',
+    'خيارات الصوت المتقدمة (اختياري)': 'Advanced voice options (optional)', 'صوت Gemini': 'Gemini voice', 'نموذج صوت Gemini': 'Gemini voice model',
+    'استخدم صوت Gemini الطبيعي مع مفتاح Gemini (يشتغل في كل المتصفحات)': 'Use Gemini’s natural voice with the Gemini key (works in every browser)',
     'لغة الشرح': 'Explanation language', 'تلقائي: حسب لغة الشريحة': 'Automatic: follow the slide’s language', 'عربي دائمًا': 'Always Arabic',
     'الصوت يبدّل تلقائيًا بين صوت عربي وصوت إنجليزي داخل الجملة نفسها.': 'The voice switches automatically between an Arabic and an English voice within the same sentence.',
     'الشرح: Gemini': 'Explanations: Gemini', 'مفتاح Gemini API': 'Gemini API key', 'النموذج': 'Model', 'الصوت: ElevenLabs (اختياري ومدفوع)': 'Voice: ElevenLabs (optional, paid)', 'مفتاح ElevenLabs API': 'ElevenLabs API key',
@@ -2569,7 +2579,7 @@ button { cursor: pointer; }
 (function () {
   'use strict';
   const synth = typeof speechSynthesis !== 'undefined' ? speechSynthesis : null;
-  const state = { muted: false, rate: 1, tts: null, ttsOff: false, audio: null, turn: -1, pitch: 1, claudeVoice: '', elevenVoice: '', run: 0, timer: null, wake: null, left: 0 };
+  const state = { muted: false, rate: 1, tts: null, ttsOff: false, audio: null, unlocked: false, geminiOff: false, geminiVoice: '', turn: -1, pitch: 1, claudeVoice: '', elevenVoice: '', run: 0, timer: null, wake: null, left: 0 };
 
   if (window.claude && window.claude.use) window.claude.use('tts').then((t) => { state.tts = t; }).catch(() => {});
   let arVoice = null;
@@ -2623,45 +2633,88 @@ button { cursor: pointer; }
     }
   }
 
-  /* ---------- ElevenLabs: صوت بشري طبيعي، يُجهَّز مسبقًا لكل لقطة ---------- */
+  /* ---------- تشغيل الصوت عبر WebAudio ----------
+   * Safari و Chrome يمنعان أي صوت يبدأ بعد انتظار شبكة ما لم يُفتح الصوت داخل ضغطة المستخدم.
+   * نفتح سياق الصوت (ونطق المتصفح) مع أول ضغطة، وبعدها كل المقاطع تشتغل منه بدون منع. */
+  const AC = window.AudioContext || window.webkitAudioContext;
+  let actx = null;
+  function unlock() {
+    try {
+      if (AC) { actx = actx || new AC(); if (actx.state === 'suspended') actx.resume(); }
+      if (synth && !state.unlocked) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; synth.speak(u); }
+      state.unlocked = true;
+    } catch (e) { /* المتصفح ما يدعم */ }
+  }
+  ['pointerdown', 'keydown', 'touchend'].forEach((t) => document.addEventListener(t, unlock, { capture: true, passive: true }));
+  // Safari يحمّل قائمة الأصوات متأخرًا وأحيانًا بدون حدث: نعيد المحاولة كم مرة
+  if (synth) [300, 1000, 2500].forEach((ms) => setTimeout(() => { if (!arVoice || !enVoice()) pickVoice(); }, ms));
+
+  function playBuffer(buffer, run) {
+    return new Promise((resolve) => {
+      const src = actx.createBufferSource();
+      src.buffer = buffer; src.playbackRate.value = state.rate; src.connect(actx.destination);
+      state.audio = src; state.wake = resolve;
+      src.onended = () => { if (state.audio === src) { state.audio = null; state.wake = null; } resolve(); };
+      if (run !== state.run) return resolve();
+      src.start();
+    });
+  }
+  const clips = new Map(); // مفتاح → وعد بمقطع جاهز (AudioBuffer)
+  function cached(id, make) {
+    if (clips.has(id)) return clips.get(id);
+    const job = make(); job.catch(() => clips.delete(id));
+    clips.set(id, job);
+    if (clips.size > 80) clips.delete(clips.keys().next().value);
+    return job;
+  }
+
+  /* ---------- صوت Gemini: طبيعي ويشتغل في كل المتصفحات، بنفس مفتاح الشرح أو عبر خادم الموقع ---------- */
+  const GEMINI_VOICES = ['Kore', 'Puck', 'Aoede', 'Charon', 'Leda', 'Orus'];
+  const geminiOn = () => !!AC && !state.geminiOff && F.store.get('gemini-voice', true) && !F.hosted && !!(F.PROXY || F.store.get('gemini-key', ''));
+  function geminiClip(text) {
+    const voice = state.geminiVoice || GEMINI_VOICES[0], model = F.store.get('gemini-tts-model', 'gemini-2.5-flash-preview-tts');
+    return cached(['g', voice, model, text].join('|'), async () => {
+      const headers = { 'Content-Type': 'application/json' };
+      if (!F.PROXY) headers['x-goog-api-key'] = F.store.get('gemini-key', '');
+      const res = await fetch(`${F.PROXY || 'https://generativelanguage.googleapis.com'}/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ contents: [{ parts: [{ text }] }], generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } } }),
+      });
+      if (!res.ok) throw Object.assign(new Error(`خطأ ${res.status} من Gemini.`), { fatal: res.status !== 429 && res.status < 500 });
+      const part = ((((await res.json()).candidates || [])[0] || {}).content || { parts: [] }).parts.find((p) => p.inlineData || p.inline_data);
+      const data = part && (part.inlineData || part.inline_data);
+      if (!data || !data.data) throw new Error('Gemini ما رجّع صوتًا.');
+      // الرد: عيّنات PCM خام 16-بت قناة واحدة
+      const rate = Number(((data.mimeType || data.mime_type || '').match(/rate=(\d+)/) || [])[1]) || 24000;
+      const bin = atob(data.data), n = bin.length >> 1, buf = actx.createBuffer(1, n, rate), ch = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) { const v = bin.charCodeAt(i * 2) | (bin.charCodeAt(i * 2 + 1) << 8); ch[i] = (v >= 32768 ? v - 65536 : v) / 32768; }
+      return buf;
+    });
+  }
+
+  /* ---------- ElevenLabs: اختياري ---------- */
   const EL = 'https://api.elevenlabs.io/v1';
   const elevenCfg = () => ({ key: F.store.get('eleven-key', ''), voice: state.elevenVoice || F.store.get('eleven-voice', ''), model: F.store.get('eleven-model', 'eleven_multilingual_v2') });
   // داخل claude.ai الشبكة مقفولة على ElevenLabs، فنستخدم صوت Claude هناك.
-  const elevenOn = () => { const c = elevenCfg(); return !F.hosted && !!(c.key && c.voice); };
-  const clips = new Map();
+  const elevenOn = () => { const c = elevenCfg(); return !!AC && !F.hosted && !!(c.key && c.voice); };
   let elevenWarned = false;
-
   function elevenClip(text) {
-    const c = elevenCfg(), id = [c.voice, c.model, text].join('|');
-    if (clips.has(id)) return clips.get(id);
-    const job = fetch(`${EL}/text-to-speech/${encodeURIComponent(c.voice)}?output_format=mp3_44100_128`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'xi-api-key': c.key },
-      // إعدادات تميل للإلقاء الطبيعي: ثبات متوسط يعطي تنغيمًا حيًّا بدل النبرة الواحدة
-      // ما نحدد لغة: النموذج متعدد اللغات يتعرّف على العربي والإنجليزي داخل الجملة تلقائيًا
-      body: JSON.stringify({ text, model_id: c.model, voice_settings: { stability: 0.45, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true } }),
-    }).then(async (res) => {
+    const c = elevenCfg();
+    return cached(['e', c.voice, c.model, text].join('|'), async () => {
+      const res = await fetch(`${EL}/text-to-speech/${encodeURIComponent(c.voice)}?output_format=mp3_44100_128`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'xi-api-key': c.key },
+        // إعدادات تميل للإلقاء الطبيعي؛ وما نحدد لغة لأن النموذج يتعرّف على العربي والإنجليزي داخل الجملة تلقائيًا
+        body: JSON.stringify({ text, model_id: c.model, voice_settings: { stability: 0.45, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true } }),
+      });
       if (!res.ok) throw new Error(res.status === 401 ? 'مفتاح ElevenLabs غير صالح.' : res.status === 429 ? 'وصلت حد الاستخدام في ElevenLabs.' : res.status === 404 || res.status === 400 ? 'الصوت أو النموذج المختار غير متاح في ElevenLabs.' : `خطأ ${res.status} من ElevenLabs.`);
-      return URL.createObjectURL(await res.blob());
+      const bytes = await res.arrayBuffer();
+      return new Promise((ok, bad) => actx.decodeAudioData(bytes, ok, () => bad(new Error('ما قدرنا نشغّل صوت ElevenLabs.'))));
     });
-    job.catch(() => clips.delete(id));
-    clips.set(id, job);
-    if (clips.size > 60) { const old = clips.keys().next().value; clips.get(old).then((u) => URL.revokeObjectURL(u)).catch(() => {}); clips.delete(old); }
-    return job;
   }
   /** يجهّز صوت اللقطة القادمة والحالية تنطق، فما يصير فراغ بين اللقطات. */
-  function warm(text) { if (elevenOn() && !state.muted) elevenClip(text).catch(() => {}); }
-
-  async function eleven(text, run) {
-    const url = await elevenClip(text);
-    if (run !== state.run) return;
-    const audio = new Audio(url);
-    audio.playbackRate = state.rate; state.audio = audio;
-    await new Promise((resolve, reject) => {
-      state.wake = resolve; audio.onended = resolve;
-      audio.onerror = () => reject(new Error('ما قدرنا نشغّل صوت ElevenLabs.'));
-      audio.play().catch(reject);
-    });
-    if (state.audio === audio) { state.audio = null; state.wake = null; }
+  function warm(text) {
+    if (state.muted || !actx) return;
+    if (elevenOn()) elevenClip(text).catch(() => {}); else if (geminiOn()) geminiClip(text).catch(() => {});
   }
 
   async function listVoices(key) {
@@ -2671,11 +2724,12 @@ button { cursor: pointer; }
     return ((await res.json()).voices || []).map((v) => ({ id: v.voice_id, name: v.name, arabic: arabic(v), tags: Object.values(v.labels || {}).join('، ') }))
       .sort((a, b) => b.arabic - a.arabic);
   }
-  const kind = () => (elevenOn() ? 'eleven' : state.tts && !state.ttsOff ? 'claude' : 'browser');
+  const kind = () => (elevenOn() ? 'eleven' : geminiOn() ? 'gemini' : state.tts && !state.ttsOff ? 'claude' : 'browser');
   /** وصف الصوت المستخدم الآن، وهل هو صوت طبيعي. */
   function describeVoice() {
     const k = kind();
     if (k === 'eleven') return { label: 'صوت ElevenLabs', natural: true };
+    if (k === 'gemini') return { label: 'صوت Gemini', natural: true };
     if (k === 'claude') return { label: 'صوت Claude' + (state.claudeVoice ? ' · ' + ({ buttery: 'دافئ', airy: 'خفيف', glassy: 'صافي', rounded: 'عميق' }[state.claudeVoice]) : ''), natural: true };
     if (F.ui === 'en') { // الواجهة إنجليزية: المهم هو الصوت الإنجليزي
       const v = enVoice();
@@ -2691,13 +2745,14 @@ button { cursor: pointer; }
   const rotating = () => F.store.get('rotate-voice', true);
   /** يُستدعى مع بداية كل شرح جديد: ينقل للصوت التالي في كل مزوّد. */
   function rotate() {
-    if (!rotating()) { state.claudeVoice = ''; state.elevenVoice = ''; state.pitch = 1; pickVoice(); return; }
+    if (!rotating()) { state.claudeVoice = ''; state.elevenVoice = ''; state.geminiVoice = ''; state.pitch = 1; pickVoice(); return; }
     const t = ++state.turn;
     state.claudeVoice = CLAUDE_VOICES[(CLAUDE_VOICES.indexOf(F.store.get('claude-voice', 'buttery')) + t) % CLAUDE_VOICES.length];
     const all = arVoices(), natural = all.filter((v) => quality(v) >= 4), pool = natural.length ? natural : all;
     if (pool.length) arVoice = pool[t % pool.length];
     // لو المتصفح فيه صوت عربي واحد فقط، نغيّر طبقته حتى يختلف من شرح لشرح
     state.pitch = pool.length > 1 ? 1 : [1, 0.82, 1.18][t % 3];
+    state.geminiVoice = GEMINI_VOICES[t % GEMINI_VOICES.length];
     const ids = F.store.get('eleven-voices', []);
     state.elevenVoice = ids.length ? ids[t % ids.length] : '';
     document.dispatchEvent(new Event('fahem:voice'));
@@ -2708,12 +2763,19 @@ button { cursor: pointer; }
     stop();
     const run = ++state.run;
     if (state.muted) return silent(text, run);
+    if (!actx) unlock();
     if (elevenOn()) {
-      try { await eleven(text, run); return; }
+      try { const buf = await elevenClip(text); if (run !== state.run) return; await playBuffer(buf, run); return; }
       catch (e) {
         if (run !== state.run) return;
-        state.audio = null; state.wake = null;
         if (!elevenWarned) { elevenWarned = true; F.toast((e.message || 'تعذّر صوت ElevenLabs.') + ' كمّلنا بصوت المتصفح.'); }
+      }
+    } else if (geminiOn()) {
+      try { const buf = await geminiClip(text); if (run !== state.run) return; await playBuffer(buf, run); return; }
+      catch (e) {
+        if (run !== state.run) return;
+        if (e && e.fatal) state.geminiOff = true; // النموذج غير متاح لهذا المفتاح: ما نعيد المحاولة كل لقطة
+        document.dispatchEvent(new Event('fahem:voice'));
       }
     }
     if (state.tts && !state.ttsOff) {
@@ -2738,7 +2800,7 @@ button { cursor: pointer; }
     state.run++;
     clearTimeout(state.timer);
     if (state.wake) { const w = state.wake; state.wake = null; w(); }
-    if (state.audio) { try { state.audio.pause(); } catch (e) { /* لا شيء ينطق */ } state.audio = null; }
+    if (state.audio) { const src = state.audio; state.audio = null; try { src.onended = null; src.stop(); } catch (e) { /* لا شيء ينطق */ } }
     try { if (state.tts) state.tts.stop(); } catch (e) { /* لا شيء ينطق */ }
     try { if (synth) synth.cancel(); } catch (e) { /* لا شيء ينطق */ }
   }
@@ -2768,7 +2830,7 @@ button { cursor: pointer; }
     return () => r.stop();
   }
 
-  F.Voice = { state, estimate, isEdge: /Edg\//.test(navigator.userAgent), speak, stop, warm, rotate, kind, describeVoice, arVoices, setBrowserVoice, hasClaude: () => !!(state.tts && !state.ttsOff), listVoices, elevenCfg, resetWarning() { elevenWarned = false; }, canListen, listen };
+  F.Voice = { state, estimate, unlock, audio: () => actx, isEdge: /Edg\//.test(navigator.userAgent), speak, stop, warm, rotate, kind, describeVoice, arVoices, setBrowserVoice, hasClaude: () => !!(state.tts && !state.ttsOff), listVoices, elevenCfg, resetWarning() { elevenWarned = false; state.geminiOff = false; }, canListen, listen };
 })();
 
 /* فاهم — مؤثرات صوتية خفيفة جدًا تعطي إحساسًا بالإيقاع: نقرة مع كل عنصر ينرسم، ونغمة عند الإنجاز. تسكت مع زر الكتم. */
@@ -2778,7 +2840,7 @@ button { cursor: pointer; }
   const on = () => !F.Voice.state.muted && F.store.get('sfx', true);
   function tone(freq, dur, at, gain) {
     try {
-      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      ctx = F.Voice.audio() || ctx || new (window.AudioContext || window.webkitAudioContext)();
       const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + (at || 0);
       o.type = 'sine'; o.frequency.setValueAtTime(freq, t);
       g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain || 0.04, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
@@ -2809,8 +2871,9 @@ button { cursor: pointer; }
 
   const cfg = () => ({ key: F.store.get('gemini-key', ''), model: F.store.get('gemini-model', 'gemini-2.5-flash') });
   // داخل claude.ai الشبكة مقفولة على Gemini، فنستخدم Claude هناك.
-  const provider = () => (!F.hosted && cfg().key ? 'gemini' : sample ? 'claude' : 'local');
-  const providerName = () => ({ gemini: `Gemini (${cfg().model})`, claude: 'Claude', local: 'شرح مبسّط بدون ذكاء اصطناعي' }[provider()]);
+  // F.PROXY: خادم صغير يملكه صاحب الموقع ويحمل مفتاح Gemini، فالزوار يستخدمون الشرح والصوت بدون مفاتيح
+  const provider = () => (!F.hosted && (F.PROXY || cfg().key) ? 'gemini' : sample ? 'claude' : 'local');
+  const providerName = () => ({ gemini: F.PROXY ? 'Gemini' : `Gemini (${cfg().model})`, claude: 'Claude', local: 'شرح مبسّط بدون ذكاء اصطناعي' }[provider()]);
 
   const SHAPES_AR = `map خريطة ذهنية لمفهوم وفروعه (ضع hub)؛ steps خطوات متتابعة أو تسلسل زمني؛ cycle دورة تتكرر؛ compare مقارنة بين شيئين (ضع a و b، ولكل عنصر side)؛ bars أعمدة لمقارنة كميات؛ line خط لتغيّر كمية مع الوقت أو الحجم؛ pie نسب من كل؛ list قائمة نقاط؛ formula معادلة تُشتق أو تُحل سطرًا سطرًا (label هو السطر الرياضي بالرموز فقط بدون كلمات عربية، و detail وصف قصير للخطوة)؛ lab تجربة أو رحلة مادة عبر أوعية مختبر (لكل عنصر vessel واحد من beaker أو flask أو tube أو pill أو drop)؛ timeline خط زمني (label الحدث و detail تاريخه)؛ table جدول (ضع cols عناوين الأعمدة حتى 3، ولكل عنصر label اسم الصف و cells خلاياه)؛ pyramid مستويات من القاعدة إلى القمة؛ code كود قصير يُتتبّع سطرًا سطرًا (label هو سطر الكود كما هو حتى 55 حرفًا، و say يشرح السطر)؛ big عبارة أو رقم أو معادلة واحدة تستحق الإبراز (ضع text و note، بدون items)`;
   const SHAPES_EN = `map: a mind map of a concept and its branches (set hub); steps: sequential steps or a timeline; cycle: a repeating loop; compare: two things side by side (set a and b, and side on each item); bars: bar chart comparing quantities; line: line chart of a quantity changing over time or size; pie: shares of a whole; list: bullet points; formula: an equation derived or solved line by line (label is the maths line as-is, detail a short name for the step); lab: an experiment or a substance's journey through lab vessels (each item has a vessel: beaker, flask, tube, pill or drop); timeline: events on a time axis (label the event, detail its date); table: a table (set cols, up to 3 column headers, and on each item label as the row name and cells as its cells); pyramid: levels from base to top; code: a short snippet traced line by line (label is the code line as-is, up to 55 characters, and say explains that line); big: one statement, number or formula worth a spotlight (set text and note, no items)`;
@@ -2946,8 +3009,10 @@ ${SCHEMA}`;
     const { key, model } = cfg();
     const parts = [{ text: prompt }];
     if (image) parts.push({ inline_data: { mime_type: 'image/jpeg', data: image.split(',')[1] } });
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+    const headers = { 'Content-Type': 'application/json' };
+    if (!F.PROXY) headers['x-goog-api-key'] = key;
+    const res = await fetch(`${F.PROXY || 'https://generativelanguage.googleapis.com'}/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST', headers,
       body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig: { responseMimeType: 'application/json', temperature: 0.6 } }),
     });
     if (!res.ok) {
@@ -3939,10 +4004,12 @@ ${SCHEMA}`;
          <div class="form"><label for="set-lang">لغة الشرح</label>
           <select id="set-lang">${[['auto', 'تلقائي: حسب لغة الشريحة'], ['ar', 'عربي دائمًا'], ['en', 'English always']].map(([id, n]) => `<option value="${id}" ${store.get('lang', 'auto') === id ? 'selected' : ''}>${n}</option>`).join('')}</select>
           <p class="muted">الصوت يبدّل تلقائيًا بين صوت عربي وصوت إنجليزي داخل الجملة نفسها.</p>
+          <p class="muted">الصوت تلقائي: فاهم يختار أفضل صوت متاح ويغيّره مع كل شرح، وما تحتاج تضبط شي.</p>
+          <details class="adv"><summary>خيارات الصوت المتقدمة (اختياري)</summary><div class="form">
           <label for="cl-voice">صوت الشرح</label>
            <select id="cl-voice">${[['buttery', 'دافئ'], ['airy', 'خفيف'], ['glassy', 'صافي'], ['rounded', 'عميق']].map(([id, n]) => `<option value="${id}" ${store.get('claude-voice', 'buttery') === id ? 'selected' : ''}>${n}</option>`).join('')}</select>
            <button type="button" class="btn ghost" id="voice-test">جرّب الصوت</button>
-           <label class="check"><input type="checkbox" id="rot-voice" ${store.get('rotate-voice', true) ? 'checked' : ''}> غيّر الصوت مع كل شرح</label></div>
+           <label class="check"><input type="checkbox" id="rot-voice" ${store.get('rotate-voice', true) ? 'checked' : ''}> غيّر الصوت مع كل شرح</label></div></details></div>
          <p class="muted">الصوت هنا مجاني ضمن حسابك في Claude. مع تفعيل التغيير يدور فاهم على الأصوات الأربعة، صوت لكل شرح.</p>
          <p class="muted">النسخة المستقلة من فاهم تشتغل على Gemini للشرح و ElevenLabs للصوت بمفاتيحك الخاصة.</p>`
       : `<form id="set-form" class="form">
@@ -3954,6 +4021,11 @@ ${SCHEMA}`;
           <input id="set-key" type="password" dir="ltr" autocomplete="off" value="${esc(c.key)}" placeholder="AIza…">
           <label for="set-model">النموذج</label>
           <input id="set-model" type="text" dir="ltr" value="${esc(c.model)}">
+          <p class="muted">الصوت تلقائي: فاهم يختار أفضل صوت متاح ويغيّره مع كل شرح، وما تحتاج تضبط شي.</p>
+          <details class="adv"><summary>خيارات الصوت المتقدمة (اختياري)</summary><div class="form">
+          <label class="check"><input type="checkbox" id="gem-voice" ${store.get('gemini-voice', true) ? 'checked' : ''}> استخدم صوت Gemini الطبيعي مع مفتاح Gemini (يشتغل في كل المتصفحات)</label>
+          <label for="gem-tts">نموذج صوت Gemini</label>
+          <input id="gem-tts" type="text" dir="ltr" value="${esc(store.get('gemini-tts-model', 'gemini-2.5-flash-preview-tts'))}">
           <h4>الصوت: ElevenLabs (اختياري ومدفوع)</h4>
           <label for="el-key">مفتاح ElevenLabs API</label>
           <div class="row"><input id="el-key" class="grow" type="password" dir="ltr" autocomplete="off" value="${esc(v.key)}" placeholder="sk_…">
@@ -3970,6 +4042,7 @@ ${SCHEMA}`;
           <label for="br-voice">الصوت العربي</label>
           <select id="br-voice">${F.Voice.arVoices().map((x) => `<option value="${esc(x.name)}">${esc(x.name)}</option>`).join('') || '<option value="">لا يوجد صوت عربي مثبّت في هذا المتصفح</option>'}</select>
           <p class="muted">هذا الخيار لا يحتاج مفتاحًا ولا رصيدًا. للصوت الطبيعي مجانًا افتح فاهم في Microsoft Edge، ففيه أصوات عربية اسمها ينتهي بـ Natural وفاهم يدور عليها. في المتصفحات الأخرى الأصوات آلية، ولو كان فيها صوت عربي واحد يغيّر فاهم طبقته من شرح لشرح.</p>
+          </div></details>
           <p class="muted">المفاتيح تنحفظ في هذا المتصفح فقط وتُرسل مباشرة إلى Google و ElevenLabs. بدون مفتاح Gemini يعطيك فاهم شرحًا مبسّطًا، وبدون ElevenLabs ينطق بصوت المتصفح.</p>
           <div class="reg-bar"><button type="button" class="btn ghost" id="set-clear">احذف المفاتيح</button><button type="submit" class="btn primary">حفظ</button></div>
         </form>`));
@@ -3987,6 +4060,7 @@ ${SCHEMA}`;
     brv.addEventListener('change', () => { F.Voice.setBrowserVoice(brv.value); if (!sel.value) F.Voice.speak(sample); });
     const persist = () => {
       store.set('gemini-key', $('#set-key').value.trim()); store.set('gemini-model', $('#set-model').value.trim() || 'gemini-2.5-flash');
+      store.set('gemini-voice', $('#gem-voice').checked); store.set('gemini-tts-model', $('#gem-tts').value.trim() || 'gemini-2.5-flash-preview-tts');
       store.set('eleven-key', $('#el-key').value.trim()); store.set('eleven-voice', sel.value);
       store.set('eleven-voice-name', sel.value ? sel.options[sel.selectedIndex].textContent : '');
       store.set('eleven-model', $('#el-model').value.trim() || 'eleven_multilingual_v2');

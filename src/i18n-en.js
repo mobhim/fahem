@@ -60,6 +60,9 @@
     'ممتاز، فاهم الشريحة.': 'Excellent, you have got this slide.', 'راجع الشرح وجرّب مرة ثانية.': 'Review the explanation and try again.',
 
     // الإعدادات
+    'الصوت تلقائي: فاهم يختار أفضل صوت متاح ويغيّره مع كل شرح، وما تحتاج تضبط شي.': 'The voice is automatic: Fahem picks the best available voice and changes it with every explanation. Nothing to set up.',
+    'خيارات الصوت المتقدمة (اختياري)': 'Advanced voice options (optional)', 'صوت Gemini': 'Gemini voice', 'نموذج صوت Gemini': 'Gemini voice model',
+    'استخدم صوت Gemini الطبيعي مع مفتاح Gemini (يشتغل في كل المتصفحات)': 'Use Gemini’s natural voice with the Gemini key (works in every browser)',
     'لغة الشرح': 'Explanation language', 'تلقائي: حسب لغة الشريحة': 'Automatic: follow the slide’s language', 'عربي دائمًا': 'Always Arabic',
     'الصوت يبدّل تلقائيًا بين صوت عربي وصوت إنجليزي داخل الجملة نفسها.': 'The voice switches automatically between an Arabic and an English voice within the same sentence.',
     'الشرح: Gemini': 'Explanations: Gemini', 'مفتاح Gemini API': 'Gemini API key', 'النموذج': 'Model', 'الصوت: ElevenLabs (اختياري ومدفوع)': 'Voice: ElevenLabs (optional, paid)', 'مفتاح ElevenLabs API': 'ElevenLabs API key',

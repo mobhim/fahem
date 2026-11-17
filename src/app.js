@@ -78,10 +78,12 @@
          <div class="form"><label for="set-lang">لغة الشرح</label>
           <select id="set-lang">${[['auto', 'تلقائي: حسب لغة الشريحة'], ['ar', 'عربي دائمًا'], ['en', 'English always']].map(([id, n]) => `<option value="${id}" ${store.get('lang', 'auto') === id ? 'selected' : ''}>${n}</option>`).join('')}</select>
           <p class="muted">الصوت يبدّل تلقائيًا بين صوت عربي وصوت إنجليزي داخل الجملة نفسها.</p>
+          <p class="muted">الصوت تلقائي: فاهم يختار أفضل صوت متاح ويغيّره مع كل شرح، وما تحتاج تضبط شي.</p>
+          <details class="adv"><summary>خيارات الصوت المتقدمة (اختياري)</summary><div class="form">
           <label for="cl-voice">صوت الشرح</label>
            <select id="cl-voice">${[['buttery', 'دافئ'], ['airy', 'خفيف'], ['glassy', 'صافي'], ['rounded', 'عميق']].map(([id, n]) => `<option value="${id}" ${store.get('claude-voice', 'buttery') === id ? 'selected' : ''}>${n}</option>`).join('')}</select>
            <button type="button" class="btn ghost" id="voice-test">جرّب الصوت</button>
-           <label class="check"><input type="checkbox" id="rot-voice" ${store.get('rotate-voice', true) ? 'checked' : ''}> غيّر الصوت مع كل شرح</label></div>
+           <label class="check"><input type="checkbox" id="rot-voice" ${store.get('rotate-voice', true) ? 'checked' : ''}> غيّر الصوت مع كل شرح</label></div></details></div>
          <p class="muted">الصوت هنا مجاني ضمن حسابك في Claude. مع تفعيل التغيير يدور فاهم على الأصوات الأربعة، صوت لكل شرح.</p>
          <p class="muted">النسخة المستقلة من فاهم تشتغل على Gemini للشرح و ElevenLabs للصوت بمفاتيحك الخاصة.</p>`
       : `<form id="set-form" class="form">
@@ -93,6 +95,11 @@
           <input id="set-key" type="password" dir="ltr" autocomplete="off" value="${esc(c.key)}" placeholder="AIza…">
           <label for="set-model">النموذج</label>
           <input id="set-model" type="text" dir="ltr" value="${esc(c.model)}">
+          <p class="muted">الصوت تلقائي: فاهم يختار أفضل صوت متاح ويغيّره مع كل شرح، وما تحتاج تضبط شي.</p>
+          <details class="adv"><summary>خيارات الصوت المتقدمة (اختياري)</summary><div class="form">
+          <label class="check"><input type="checkbox" id="gem-voice" ${store.get('gemini-voice', true) ? 'checked' : ''}> استخدم صوت Gemini الطبيعي مع مفتاح Gemini (يشتغل في كل المتصفحات)</label>
+          <label for="gem-tts">نموذج صوت Gemini</label>
+          <input id="gem-tts" type="text" dir="ltr" value="${esc(store.get('gemini-tts-model', 'gemini-2.5-flash-preview-tts'))}">
           <h4>الصوت: ElevenLabs (اختياري ومدفوع)</h4>
           <label for="el-key">مفتاح ElevenLabs API</label>
           <div class="row"><input id="el-key" class="grow" type="password" dir="ltr" autocomplete="off" value="${esc(v.key)}" placeholder="sk_…">
@@ -109,6 +116,7 @@
           <label for="br-voice">الصوت العربي</label>
           <select id="br-voice">${F.Voice.arVoices().map((x) => `<option value="${esc(x.name)}">${esc(x.name)}</option>`).join('') || '<option value="">لا يوجد صوت عربي مثبّت في هذا المتصفح</option>'}</select>
           <p class="muted">هذا الخيار لا يحتاج مفتاحًا ولا رصيدًا. للصوت الطبيعي مجانًا افتح فاهم في Microsoft Edge، ففيه أصوات عربية اسمها ينتهي بـ Natural وفاهم يدور عليها. في المتصفحات الأخرى الأصوات آلية، ولو كان فيها صوت عربي واحد يغيّر فاهم طبقته من شرح لشرح.</p>
+          </div></details>
           <p class="muted">المفاتيح تنحفظ في هذا المتصفح فقط وتُرسل مباشرة إلى Google و ElevenLabs. بدون مفتاح Gemini يعطيك فاهم شرحًا مبسّطًا، وبدون ElevenLabs ينطق بصوت المتصفح.</p>
           <div class="reg-bar"><button type="button" class="btn ghost" id="set-clear">احذف المفاتيح</button><button type="submit" class="btn primary">حفظ</button></div>
         </form>`));
@@ -126,6 +134,7 @@
     brv.addEventListener('change', () => { F.Voice.setBrowserVoice(brv.value); if (!sel.value) F.Voice.speak(sample); });
     const persist = () => {
       store.set('gemini-key', $('#set-key').value.trim()); store.set('gemini-model', $('#set-model').value.trim() || 'gemini-2.5-flash');
+      store.set('gemini-voice', $('#gem-voice').checked); store.set('gemini-tts-model', $('#gem-tts').value.trim() || 'gemini-2.5-flash-preview-tts');
       store.set('eleven-key', $('#el-key').value.trim()); store.set('eleven-voice', sel.value);
       store.set('eleven-voice-name', sel.value ? sel.options[sel.selectedIndex].textContent : '');
       store.set('eleven-model', $('#el-model').value.trim() || 'eleven_multilingual_v2');

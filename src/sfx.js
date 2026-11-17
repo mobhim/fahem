@@ -5,7 +5,7 @@
   const on = () => !F.Voice.state.muted && F.store.get('sfx', true);
   function tone(freq, dur, at, gain) {
     try {
-      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      ctx = F.Voice.audio() || ctx || new (window.AudioContext || window.webkitAudioContext)();
       const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + (at || 0);
       o.type = 'sine'; o.frequency.setValueAtTime(freq, t);
       g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain || 0.04, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);

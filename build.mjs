@@ -1,6 +1,9 @@
 // يجمع src/ في ملفين: dist/index.html (صفحة مستقلة تُستضاف في أي مكان) و dist/fahem.artifact.html (محتوى الصفحة بدون هيكل).
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 const read = (p) => readFileSync(new URL('./src/' + p, import.meta.url), 'utf8');
+// config.json اختياري: {"proxy": "https://your-worker.example.workers.dev"}
+let config = {};
+try { config = JSON.parse(readFileSync(new URL('./config.json', import.meta.url), 'utf8')); } catch (e) { /* بدون خادم وسيط */ }
 const SCRIPTS = ['util.js', 'i18n-en.js', 'i18n.js', 'core/scheduler.js', 'core/import.js', 'core/catalog-demo.js', 'core/lesson.js', 'core/demos-en.js', 'board.js', 'voice.js', 'sfx.js', 'ai.js', 'slides.js', 'study.js', 'register.js', 'app.js'];
 const CDN = 'https://cdnjs.cloudflare.com/ajax/libs';
 const head = `<title>فاهم</title>
@@ -14,6 +17,7 @@ const body = `${read('body.html')}
 <script src="${CDN}/pdf.js/3.11.174/pdf.worker.min.js"></script>
 <script src="${CDN}/jszip/3.10.1/jszip.min.js"></script>
 <script src="${CDN}/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>window.FAHEM_CONFIG = ${JSON.stringify({ proxy: config.proxy || '' })};</script>
 <script>
 ${SCRIPTS.map((s) => read(s).replace(/<\/script/g, '<\\/script')).join('\n')}</script>`;
 mkdirSync(new URL('./dist/', import.meta.url), { recursive: true });
